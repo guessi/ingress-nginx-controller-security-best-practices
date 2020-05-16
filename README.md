@@ -8,9 +8,9 @@ Sample script for deployment [Nginx Ingress Controller](https://kubernetes.githu
 
 ## Prerequisites
 
-- Kubernetes 1.9+
-- Kubernetes Helm 2.10+
-- [Role-Based Access Control (RBAC)](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+- Kubernetes 1.9.x - 1.18.x
+- Kubernetes Helm 2.10.x - 3.2.x
+- Kubernetes Command Line Tool - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 
 ## Why I Create this Repository?
 
@@ -18,14 +18,28 @@ Tons of sample scripts for nginx-ingress-controller, but few of them were securi
 
 ## Let's Get Started
 
-### Get Helm prepared, and make sure helm-repo is up to date
+### Get Helm prepared, and don't forget to check your helm version
+
+    $ helm version
+
+### Ensure helm-repo is up to date
 
     $ helm repo update
 
 ### Install Nginx Ingress Controller
 
-    $ helm install stable/nginx-ingress \
-        --name nginx-ingress \
+for helm 3.x
+
+    $ helm install nginx-ingress \
+        stable/nginx-ingress \
+        --namespace kube-system \
+        --set rbac.create=true \
+        --set controller.kind=DaemonSet
+
+for helm 2.x
+
+    $ helm install --name nginx-ingress \
+        stable/nginx-ingress \
         --namespace kube-system \
         --set rbac.create=true \
         --set controller.kind=DaemonSet
@@ -142,7 +156,13 @@ Cleanup sample scripts via `kubectl delete`
 
 Cleanup Nginx Ingress Controller
 
-    $ helm del --purge nginx-ingress
+for helm 2.x
+
+    $ helm del --purge nginx-ingress --namespace kube-system
+
+for helm 3.x
+
+    $ helm del nginx-ingress --namespace kube-system
 
 # Reference
 
