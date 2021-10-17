@@ -1,0 +1,69 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-basic-auth
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-basic-auth
+  template:
+    metadata:
+      labels:
+        app: demo-basic-auth
+    spec:
+      containers:
+      - image: kennethreitz/httpbin
+        name: httpbin
+        ports:
+        - containerPort: 80
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-backend-1
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-backend-1
+  template:
+    metadata:
+      labels:
+        app: demo-backend-1
+    spec:
+      containers:
+      - image: hashicorp/http-echo
+        name: backend1
+        args:
+        - -text="this page is served by backend1"
+        ports:
+        - containerPort: 5678
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-backend-2
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demo-backend-2
+  template:
+    metadata:
+      labels:
+        app: demo-backend-2
+    spec:
+      containers:
+      - image: hashicorp/http-echo
+        name: backend2
+        args:
+        - -text="this page is served by backend2"
+        ports:
+        - containerPort: 5678

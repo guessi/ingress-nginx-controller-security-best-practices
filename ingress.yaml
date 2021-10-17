@@ -1,12 +1,12 @@
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-entry
+  name: demo-ingress
   namespace: default
   annotations:
-    # ensure network traffic is running through nginx-ingress-controller
-    kubernetes.io/ingress.class: "nginx"
+    # (deprecated) ensure network traffic is running through nginx-ingress-controller
+    # kubernetes.io/ingress.class: "nginx"
 
     # enable owasp rules protection
     nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"
@@ -33,7 +33,7 @@ metadata:
     # setup basic auth
     # find more example under the following link:
     # - https://github.com/kubernetes/ingress-nginx/tree/master/docs/examples/auth
-    nginx.ingress.kubernetes.io/auth-url: http://basic-auth.default.svc.cluster.local/basic-auth/user/mysecretpassword
+    nginx.ingress.kubernetes.io/auth-url: http://demo-basic-auth.default.svc.cluster.local/basic-auth/user/mysecretpassword
 
     # NOTE: here we set ssl-redirect/force-ssl-redirect for demonstration only
     #       if required, you might want to set "true" before production launch
@@ -43,17 +43,23 @@ metadata:
     # enable support for url-rewrite with regex support
     nginx.ingress.kubernetes.io/rewrite-target: "/"
     nginx.ingress.kubernetes.io/use-regex: "true"
+
 spec:
+  ingressClassName: nginx
   rules:
     - http:
         paths:
-          - backend:
-              serviceName: backend1
-              servicePort: 8088
-            path: /v1
-          - backend:
-              serviceName: backend2
-              servicePort: 8088
-            path: /v2
-      # FIXME: uncomment this line before production launch
-      # host: example.com
+          - path: /v1
+            pathType: Prefix
+            backend:
+              service:
+                name: demo-backend-1
+                port:
+                  number: 8088
+          - path: /v2
+            pathType: Prefix
+            backend:
+              service:
+                name: demo-backend-2
+                port:
+                  number: 8088

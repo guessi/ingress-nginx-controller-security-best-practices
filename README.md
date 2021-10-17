@@ -8,9 +8,9 @@ Sample script for deployment [Nginx Ingress Controller](https://kubernetes.githu
 
 ## Prerequisites
 
-- Kubernetes 1.9.x - 1.18.x
-- Kubernetes Helm 2.10.x - 3.2.x
-- Kubernetes Command Line Tool - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- Kubernetes 1.21+
+- Kubernetes CLI 1.21+
+- Kubernetes Helm 3.7+
 
 ## Why I Create this Repository?
 
@@ -20,149 +20,139 @@ Tons of sample scripts for nginx-ingress-controller, but few of them were securi
 
 ### Get Helm prepared, and don't forget to check your helm version
 
-    $ helm version
+    $ helm version --short
+
+    v3.7.1+g1d11fcb
 
 ### Ensure helm-repo is up to date
 
+    $ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+
+    "ingress-nginx" has been added to your repositories
+
     $ helm repo update
+
+    Hang tight while we grab the latest from your chart repositories...
+    ...Successfully got an update from the "ingress-nginx" chart repository
+    Update Complete. ⎈Happy Helming!⎈
 
 ### Install Nginx Ingress Controller
 
-for helm 3.x
+    $ helm -n kube-system install ingress-nginx ingress-nginx/ingress-nginx
 
-    $ helm install nginx-ingress \
-        stable/nginx-ingress \
-        --namespace kube-system \
-        --set rbac.create=true \
-        --set controller.kind=DaemonSet
+### Verify Installation
 
-for helm 2.x
+    $ helm -n kube-system ls
 
-    $ helm install --name nginx-ingress \
-        stable/nginx-ingress \
-        --namespace kube-system \
-        --set rbac.create=true \
-        --set controller.kind=DaemonSet
+    NAME         	NAMESPACE  	REVISION	UPDATED                             	STATUS  	CHART              	APP VERSION
+    ingress-nginx	kube-system	1       	2021-10-17 10:57:47.876629 +0800 CST	deployed	ingress-nginx-4.0.6	1.0.4
 
-**NOTE** it is important to set `rbac.create=true`, and `controller.kind=DaemonSet`
+    $ kubectl -n kube-system get services ingress-nginx-controller -o wide
+
+    NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE   SELECTOR
+    ingress-nginx-controller   LoadBalancer   10.102.122.36   localhost     80:31249/TCP,443:30223/TCP   26s   app.kubernetes.io/component=controller,app.kubernetes.io/instance=ingress-nginx,app.kubernetes.io/name=ingress-nginx
+
+### Detect Installed Version
+
+    $ POD_NAME=$(kubectl get pods -n kube-system -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].metadata.name}')
+
+    $ kubectl -n kube-system exec -it $POD_NAME -- /nginx-ingress-controller --version
+
+    -------------------------------------------------------------------------------
+    NGINX Ingress controller
+    Release:       v1.0.4
+    Build:         9b78b6c197b48116243922170875af4aa752ee59
+    Repository:    https://github.com/kubernetes/ingress-nginx
+    nginx version: nginx/1.19.9
+    -------------------------------------------------------------------------------
 
 ### Deploy
 
 Deploy sample scripts via `kubectl apply`
 
-    $ kubectl apply \
-        -f basic-auth.yaml \
-        -f backend1.yaml \
-        -f backend2.yaml \
-        -f ingress.yaml
+    $ kubectl apply -f ./deployment.yaml -f ./service.yaml -f ./ingress.yaml
+
+    deployment.apps/demo-basic-auth created
+    deployment.apps/demo-backend-1 created
+    deployment.apps/demo-backend-2 created
+    service/demo-basic-auth created
+    service/demo-backend-1 created
+    service/demo-backend-2 created
+    ingress.networking.k8s.io/demo-ingress created
 
 Check deployment status
 
     $ kubectl get ingress,service,deployment
 
-    NAME                               HOSTS   ADDRESS                PORTS   AGE
-    ingress.extensions/ingress-entry   *       34.56.78.90,34.56...   80      2m
+    NAME                                     CLASS   HOSTS   ADDRESS   PORTS   AGE
+    ingress.networking.k8s.io/demo-ingress   nginx   *                 80      17s
 
-    NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-    service/backend1     ClusterIP   10.21.251.1     <none>        8088/TCP   2m
-    service/backend2     ClusterIP   10.21.252.2     <none>        8088/TCP   2m
-    service/basic-auth   ClusterIP   10.21.253.3     <none>        80/TCP     2m
-    service/kubernetes   ClusterIP   10.21.240.1     <none>        443/TCP    5m
+    NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+    service/demo-backend-1    ClusterIP   10.101.79.176    <none>        8088/TCP   17s
+    service/demo-backend-2    ClusterIP   10.103.188.232   <none>        8088/TCP   17s
+    service/demo-basic-auth   ClusterIP   10.96.102.32     <none>        80/TCP     17s
+    service/kubernetes        ClusterIP   10.96.0.1        <none>        443/TCP    34h
 
-    NAME                                        READY   UP-TO-DATE   AVAILABLE   AGE
-    deployment.extensions/backend-deployment1   2/2     2            2           2m
-    deployment.extensions/backend-deployment2   2/2     2            2           2m
-    deployment.extensions/basic-auth            2/2     2            2           2m
+    NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
+    deployment.apps/demo-backend-1    2/2     2            2           17s
+    deployment.apps/demo-backend-2    2/2     2            2           17s
+    deployment.apps/demo-basic-auth   2/2     2            2           17s
 
 ### Verification
 
-Before next step, please wait until `EXTERNAL-IP` for `nginx-ingress-controller` being provisioned
+Wait for ingress endpoint "ADDRESS" field become ready
 
-    $ kubectl get -n kube-system svc nginx-ingress-controller
-    NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
-    nginx-ingress-controller   LoadBalancer   10.21.251.1     <pending>     80:30625/TCP,443:32598/TCP   51s
+    $ kubectl get ingress
+    NAME           CLASS   HOSTS   ADDRESS     PORTS   AGE
+    demo-ingress   nginx   *       localhost   80      20m
 
 Let's check the response for the `/v1` endpoint
 
-    $ curl -i -k -u 'user:mysecretpassword' "https://${NGINX_INGRESS_EXTERNAL_IPADDR}/v1"
+    $ curl -i -u 'user:mysecretpassword' "http://localhost/v1"
 
-        HTTP/1.1 200 OK
-        Date: Sat, 01 Jun 2019 12:51:25 GMT
-        Content-Type: text/plain; charset=utf-8
-        Content-Length: 34
-        Connection: keep-alive
-        X-App-Name: http-echo
-        X-App-Version: 0.2.3
-        Strict-Transport-Security: max-age=15724800; includeSubDomains
+    HTTP/1.1 200 OK
+    Date: Sun, 17 Oct 2021 03:44:53 GMT
+    Content-Type: text/plain; charset=utf-8
+    Content-Length: 34
+    Connection: keep-alive
+    X-App-Name: http-echo
+    X-App-Version: 0.2.3
 
-        "this page is served by backend1"
+    "this page is served by backend1"
 
 Let's check the response for the `/v2` endpoint
 
-    $ curl -i -k -u 'user:mysecretpassword' "https://${NGINX_INGRESS_EXTERNAL_IPADDR}/v2"
+    $ curl -i -u 'user:mysecretpassword' "http://localhost/v2"
 
-        HTTP/1.1 200 OK
-        Date: Sat, 01 Jun 2019 12:51:27 GMT
-        Content-Type: text/plain; charset=utf-8
-        Content-Length: 34
-        Connection: keep-alive
-        X-App-Name: http-echo
-        X-App-Version: 0.2.3
-        Strict-Transport-Security: max-age=15724800; includeSubDomains
+    HTTP/1.1 200 OK
+    Date: Sun, 17 Oct 2021 03:44:53 GMT
+    Content-Type: text/plain; charset=utf-8
+    Content-Length: 34
+    Connection: keep-alive
+    X-App-Name: http-echo
+    X-App-Version: 0.2.3
 
-        "this page is served by backend2"
+    "this page is served by backend2"
 
-Notice that response header for the http requests:
+Try to modify `ingress.yaml`, and see what's the difference
+
+In this example, response header for the http requests:
 
 - `/v1` and `/v2` are routed to different backend services
-- `/others` is not defined in nginx-ingress-controller
 - Nginx version is not exposed
 - Server information is hidden
 - Protected by [ModSecurity](https://modsecurity.org/)
 - Protected by Basic DoS Protection
 
-### Service without Nginx Ingress Controller
-
-Let's check the response for the `/others` endpoint
-
-    $ curl -i -k -u "https://${NGINX_INGRESS_EXTERNAL_IPADDR}/others"
-
-        HTTP/1.1 404 Not Found
-        Server: nginx/1.15.10
-        Date: Sat, 01 Jun 2019 12:51:36 GMT
-        Content-Type: text/plain; charset=utf-8
-        Content-Length: 21
-        Connection: keep-alive
-        Strict-Transport-Security: max-age=15724800; includeSubDomains
-
-        default backend - 404
-
-Notice that response header for the http requests:
-
-- Server engine info exposed: Nginx
-- Nginx version exposed `nginx/1.15.10`
-
-With server side information exposed, attacker could target vulnerabilities for specific to `nginx`, and specific version `nginx/1.15.10`
-
 ## Cleanup
 
 Cleanup sample scripts via `kubectl delete`
 
-    $ kubectl delete \
-        -f basic-auth.yaml \
-        -f backend1.yaml \
-        -f backend2.yaml \
-        -f ingress.yaml
+    $ kubectl delete -f ./deployment.yaml -f ./service.yaml -f ./ingress.yaml
 
 Cleanup Nginx Ingress Controller
 
-for helm 2.x
-
-    $ helm del --purge nginx-ingress --namespace kube-system
-
-for helm 3.x
-
-    $ helm del nginx-ingress --namespace kube-system
+    $ helm -n kube-system uninstall nginx-ingress
 
 # Reference
 
