@@ -20,7 +20,7 @@ metadata:
     # hide nginx version and server info from header
     nginx.ingress.kubernetes.io/configuration-snippet: |
       server_tokens off;
-      more_clear_headers Server;
+      more_clear_headers "Server" "X-App-Name" "X-App-Version";
 
     # basic DoS protection
     nginx.ingress.kubernetes.io/limit-rps: "10"
