@@ -35,33 +35,33 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
 
 ### Install Nginx Ingress Controller
 
-    $ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace kube-system --values values.yaml --wait
+    $ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --values values.yaml --wait
     Release "ingress-nginx" does not exist. Installing it now.
     NAME: ingress-nginx
     LAST DEPLOYED: Sun Jul 17 22:17:38 2022
-    NAMESPACE: kube-system
+    NAMESPACE: ingress-nginx
     STATUS: deployed
     REVISION: 1
     TEST SUITE: None
 
 ### Verify Installation
 
-    $ helm list --filter ingress-nginx --namespace kube-system
-    NAME         	NAMESPACE  	REVISION	UPDATED                             	STATUS  	CHART              	APP VERSION
-    ingress-nginx	kube-system	1       	2022-07-17 22:17:38.136514 +0800 CST	deployed	ingress-nginx-4.2.0	1.3.0
+    $ helm list --filter ingress-nginx --namespace ingress-nginx
+    NAME         	NAMESPACE    	REVISION	UPDATED                             	STATUS  	CHART              	APP VERSION
+    ingress-nginx	ingress-nginx	1       	2022-07-17 22:17:38.136514 +0800 CST	deployed	ingress-nginx-4.2.0	1.3.0
 
-    $ kubectl -n kube-system get services ingress-nginx-controller
+    $ kubectl get services ingress-nginx-controller  --namespace ingress-nginx
     NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP                         PORT(S)                      AGE
     ingress-nginx-controller   LoadBalancer   10.100.160.249  XXXXX.elb.us-east-1.amazonaws.com   80:30951/TCP,443:30575/TCP   26s
 
 ### Detect Installed Version
 
-    $ POD_NAME=$(kubectl get pods -n kube-system -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].metadata.name}')
+    $ POD_NAME=$(kubectl get pods -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].metadata.name}')
 
     $ echo ${POD_NAME}
     ingress-nginx-controller-55dcf56b68-72m8v
 
-    $ kubectl -n kube-system exec -it ${POD_NAME} -- /nginx-ingress-controller --version
+    $ kubectl -n ingress-nginx exec -it ${POD_NAME} -- /nginx-ingress-controller --version
     -------------------------------------------------------------------------------
     NGINX Ingress controller
     Release:       v1.3.0
@@ -198,7 +198,7 @@ Cleanup sample scripts via `kubectl delete`
 
 Cleanup Nginx Ingress Controller
 
-    $ helm uninstall ingress-nginx --namespace kube-system
+    $ helm uninstall ingress-nginx --namespace ingress-nginx
 
 # Reference
 
