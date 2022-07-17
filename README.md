@@ -1,6 +1,6 @@
-# Nginx Ingress Controller With Security Protections
+# Ingress-NGINX Controller for Kubernetes with Security Best Practices
 
-Sample script for deployment [Nginx Ingress Controller](https://kubernetes.github.io/ingress-nginx/) in Kubernetes cluster with security protections
+Sample deployment of [Ingress-Nginx Controller](https://kubernetes.github.io/ingress-nginx/) for Kubernetes with security best practices.
 
 ## Disclaimer
 
@@ -14,7 +14,7 @@ Sample script for deployment [Nginx Ingress Controller](https://kubernetes.githu
 
 ## Why I Create this Repository?
 
-Tons of sample scripts for nginx-ingress-controller, but few of them were security by default.
+Tons of sample scripts for Ingress-Nginx Controller, but few of them were security by default.
 
 ## Let's Get Started
 
@@ -179,11 +179,11 @@ Cleanup sample scripts via `kubectl delete`
 
 Cleanup Nginx Ingress Controller
 
-    $ helm uninstall nginx-ingress --namespace kube-system
+    $ helm uninstall ingress-nginx --namespace kube-system
 
 # Reference
 
-- [Nginx Ingress Controller](https://kubernetes.github.io/ingress-nginx/)
+- [Nginx-Ingress Controller](https://kubernetes.github.io/ingress-nginx/)
 - [Nginx Full Configurations Example](https://www.nginx.com/resources/wiki/start/topics/examples/full/)
 - [ModSecurity Web Application Firewall](https://kubernetes.github.io/ingress-nginx/user-guide/third-party-addons/modsecurity/)
 - [Role-Based Access Control (RBAC)](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
