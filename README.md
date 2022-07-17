@@ -35,7 +35,7 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
 
 ### Install Nginx Ingress Controller
 
-    $ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace kube-system
+    $ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace kube-system --values values.yaml --wait
     Release "ingress-nginx" does not exist. Installing it now.
     NAME: ingress-nginx
     LAST DEPLOYED: Sun Jul 17 22:17:38 2022
@@ -51,8 +51,8 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     ingress-nginx	kube-system	1       	2022-07-17 22:17:38.136514 +0800 CST	deployed	ingress-nginx-4.2.0	1.3.0
 
     $ kubectl -n kube-system get services ingress-nginx-controller
-    NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP               PORT(S)                      AGE
-    ingress-nginx-controller   LoadBalancer   10.100.160.249  XXXXX.elb.amazonaws.com   80:30951/TCP,443:30575/TCP   26s
+    NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP                         PORT(S)                      AGE
+    ingress-nginx-controller   LoadBalancer   10.100.160.249  XXXXX.elb.us-east-1.amazonaws.com   80:30951/TCP,443:30575/TCP   26s
 
 ### Detect Installed Version
 
@@ -87,8 +87,8 @@ Deploy sample scripts via `kubectl apply`
 Check deployment status
 
     $ kubectl get ingress,service,deployment
-    NAME                                     CLASS   HOSTS   ADDRESS                   PORTS   AGE
-    ingress.networking.k8s.io/demo-ingress   nginx   *       XXXXX.elb.amazonaws.com   80      17s
+    NAME                                     CLASS   HOSTS   ADDRESS                             PORTS   AGE
+    ingress.networking.k8s.io/demo-ingress   nginx   *       XXXXX.elb.us-east-1.amazonaws.com   80      17s
 
     NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
     service/demo-backend-1    ClusterIP   10.101.79.176    <none>        8088/TCP   17s
@@ -138,28 +138,47 @@ Check backend service returns via proxy
 Wait until ingress endpoint become ready (ADDRESS fieled should show ELB address)
 
     $ kubectl get ingress
-    NAME           CLASS   HOSTS   ADDRESS                   PORTS   AGE
-    demo-ingress   nginx   *       XXXXX.elb.amazonaws.com   80      42s
+    NAME           CLASS   HOSTS   ADDRESS                             PORTS   AGE
+    demo-ingress   nginx   *       XXXXX.elb.us-east-1.amazonaws.com   80      42s
 
-Let's check the response again with ELB endpoint
+Let's check the responses again with ELB endpoint, HTTPS protocol
 
-    $ curl -i -u 'user:mysecretpassword' "http://${LOAD_BALANCER}/v1"
-    HTTP/1.1 200 OK
-    Date: Sun, 17 Jul 2022 14:27:27 GMT
-    Content-Type: text/plain; charset=utf-8
-    Content-Length: 34
-    Connection: keep-alive # <--------------------- No sensitive information expose.
+    $ curl -i -u 'user:mysecretpassword' "https://${LOAD_BALANCER}/v1" -k
+    HTTP/2 200 # <--------------------- Serve with HTTP/2.
+    date: Sun, 17 Jul 2022 15:18:09 GMT
+    content-type: text/plain; charset=utf-8
+    content-length: 34
+    strict-transport-security: max-age=15724800; includeSubDomains # <--------------------- No sensitive information expose.
 
     "this page is served by backend1"
 
-    $ curl -i -u 'user:mysecretpassword' "http://${LOAD_BALANCER}/v2"
-    HTTP/1.1 200 OK
-    Date: Sun, 17 Jul 2022 14:27:48 GMT
-    Content-Type: text/plain; charset=utf-8
-    Content-Length: 34
-    Connection: keep-alive # <--------------------- No sensitive information expose.
+    $ curl -i -u 'user:mysecretpassword' "https://${LOAD_BALANCER}/v2" -k
+    HTTP/2 200 # <--------------------- Serve with HTTP/2.
+    date: Sun, 17 Jul 2022 15:18:16 GMT
+    content-type: text/plain; charset=utf-8
+    content-length: 34
+    strict-transport-security: max-age=15724800; includeSubDomains # <--------------------- No sensitive information expose.
 
     "this page is served by backend2"
+
+Let's check the responses again with ELB endpoint, HTTP protocol
+
+    $ curl -i -u 'user:mysecretpassword' "http://XXXXX.elb.us-east-1.amazonaws.com/v1"
+    HTTP/1.1 308 Permanent Redirect # <--------------------- Securely redirect to HTTPS.
+    Date: Sun, 17 Jul 2022 15:20:48 GMT
+    Content-Type: text/html
+    Content-Length: 164
+    Connection: keep-alive
+    Location: https://XXXXX.elb.us-east-1.amazonaws.com/v1 # <--------------------- Securely redirect to HTTPS.
+
+    $ curl -i -u 'user:mysecretpassword' "http://XXXXX.elb.us-east-1.amazonaws.com/v2"
+    HTTP/1.1 308 Permanent Redirect # <--------------------- Securely redirect to HTTPS.
+    Date: Sun, 17 Jul 2022 15:20:57 GMT
+    Content-Type: text/html
+    Content-Length: 164
+    Connection: keep-alive
+    Location: https://XXXXX.elb.us-east-1.amazonaws.com/v2 # <--------------------- Securely redirect to HTTPS.
+
 
 Try to modify `ingress.yaml`, and see what's the difference
 

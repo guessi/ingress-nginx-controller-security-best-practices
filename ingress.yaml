@@ -37,8 +37,8 @@ metadata:
 
     # NOTE: here we set ssl-redirect/force-ssl-redirect for demonstration only
     #       if required, you might want to set "true" before production launch
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 
     # enable support for url-rewrite with regex support
     nginx.ingress.kubernetes.io/rewrite-target: "/"
