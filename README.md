@@ -21,7 +21,7 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
 ### Get Helm prepared, and don't forget to check your helm version
 
     $ helm version --short
-    v3.9.1+ga7c043a
+    v3.9.4+gdbc6d8e
 
 ### Ensure helm-repo is up to date
 
@@ -38,22 +38,20 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     $ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --values values.yaml --wait
     Release "ingress-nginx" does not exist. Installing it now.
     NAME: ingress-nginx
-    LAST DEPLOYED: Sun Jul 17 22:17:38 2022
+    LAST DEPLOYED: Mon Sep 19 13:14:25 2022
     NAMESPACE: ingress-nginx
     STATUS: deployed
     REVISION: 1
     TEST SUITE: None
-
 ### Verify Installation
 
     $ helm list --filter ingress-nginx --namespace ingress-nginx
     NAME         	NAMESPACE    	REVISION	UPDATED                             	STATUS  	CHART              	APP VERSION
-    ingress-nginx	ingress-nginx	1       	2022-07-17 22:17:38.136514 +0800 CST	deployed	ingress-nginx-4.2.0	1.3.0
+    ingress-nginx	ingress-nginx	1       	2022-09-19 13:14:25.993815 +0800 CST	deployed	ingress-nginx-4.2.5	1.3.1
 
     $ kubectl get services ingress-nginx-controller  --namespace ingress-nginx
     NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP                         PORT(S)                      AGE
-    ingress-nginx-controller   LoadBalancer   10.100.160.249  XXXXX.elb.us-east-1.amazonaws.com   80:30951/TCP,443:30575/TCP   26s
-
+    ingress-nginx-controller   LoadBalancer   10.100.49.36    XXXXX.elb.us-east-1.amazonaws.com   80:30547/TCP,443:30772/TCP   2m13s
 ### Detect Installed Version
 
     $ POD_NAME=$(kubectl get pods -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].metadata.name}')
@@ -64,11 +62,10 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     $ kubectl -n ingress-nginx exec -it ${POD_NAME} -- /nginx-ingress-controller --version
     -------------------------------------------------------------------------------
     NGINX Ingress controller
-    Release:       v1.3.0
-    Build:         2b7b74854d90ad9b4b96a5011b9e8b67d20bfb8f
+    Release:       v1.3.1
+    Build:         92534fa2ae799b502882c8684db13a25cde68155
     Repository:    https://github.com/kubernetes/ingress-nginx
     nginx version: nginx/1.19.10
-
     -------------------------------------------------------------------------------
 
 ### Deploy
@@ -88,19 +85,18 @@ Check deployment status
 
     $ kubectl get ingress,service,deployment
     NAME                                     CLASS   HOSTS   ADDRESS                             PORTS   AGE
-    ingress.networking.k8s.io/demo-ingress   nginx   *       XXXXX.elb.us-east-1.amazonaws.com   80      17s
+    ingress.networking.k8s.io/demo-ingress   nginx   *       XXXXX.elb.us-east-1.amazonaws.com   80      89s
 
     NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-    service/demo-backend-1    ClusterIP   10.101.79.176    <none>        8088/TCP   17s
-    service/demo-backend-2    ClusterIP   10.103.188.232   <none>        8088/TCP   17s
-    service/demo-basic-auth   ClusterIP   10.96.102.32     <none>        80/TCP     17s
-    service/kubernetes        ClusterIP   10.96.0.1        <none>        443/TCP    34h
+    service/demo-backend-1    ClusterIP   10.100.69.221    <none>        8088/TCP   94s
+    service/demo-backend-2    ClusterIP   10.100.124.153   <none>        8088/TCP   93s
+    service/demo-basic-auth   ClusterIP   10.100.188.204   <none>        80/TCP     96s
+    service/kubernetes        ClusterIP   10.100.0.1       <none>        443/TCP    8d
 
-    NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
-    deployment.apps/demo-backend-1    2/2     2            2           17s
-    deployment.apps/demo-backend-2    2/2     2            2           17s
-    deployment.apps/demo-basic-auth   2/2     2            2           17s
-
+    NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
+    deployment.apps/demo-backend-1     2/2     2            2           101s
+    deployment.apps/demo-backend-2     2/2     2            2           99s
+    deployment.apps/demo-basic-auth    2/2     2            2           102s
 ### Verification
 
 Expose backend service entries directly with port-forward
@@ -119,7 +115,7 @@ Check backend service returns via proxy
     HTTP/1.1 200 OK
     X-App-Name: http-echo # <--------------------- Service information exposed.
     X-App-Version: 0.2.3 # <--------------------- Running version information exposed.
-    Date: Sun, 17 Jul 2022 14:25:47 GMT
+    Date: Mon, 19 Sep 2022 05:23:11 GMT
     Content-Length: 34
     Content-Type: text/plain; charset=utf-8
 
@@ -129,7 +125,7 @@ Check backend service returns via proxy
     HTTP/1.1 200 OK
     X-App-Name: http-echo # <--------------------- Service information exposed.
     X-App-Version: 0.2.3 # <--------------------- Running version information exposed.
-    Date: Sun, 17 Jul 2022 14:25:48 GMT
+    Date: Mon, 19 Sep 2022 05:23:32 GMT
     Content-Length: 34
     Content-Type: text/plain; charset=utf-8
 
@@ -139,13 +135,13 @@ Wait until ingress endpoint become ready (ADDRESS fieled should show ELB address
 
     $ kubectl get ingress
     NAME           CLASS   HOSTS   ADDRESS                             PORTS   AGE
-    demo-ingress   nginx   *       XXXXX.elb.us-east-1.amazonaws.com   80      42s
+    demo-ingress   nginx   *       XXXXX.elb.us-east-1.amazonaws.com   80      3m6s
 
 Let's check the responses again with ELB endpoint, HTTPS protocol
 
     $ curl -i -u 'user:mysecretpassword' "https://${LOAD_BALANCER}/v1" -k
     HTTP/2 200 # <--------------------- Serve with HTTP/2.
-    date: Sun, 17 Jul 2022 15:18:09 GMT
+    date: Mon, 19 Sep 2022 05:24:32 GMT
     content-type: text/plain; charset=utf-8
     content-length: 34
     strict-transport-security: max-age=15724800; includeSubDomains # <--------------------- No sensitive information expose.
@@ -154,7 +150,7 @@ Let's check the responses again with ELB endpoint, HTTPS protocol
 
     $ curl -i -u 'user:mysecretpassword' "https://${LOAD_BALANCER}/v2" -k
     HTTP/2 200 # <--------------------- Serve with HTTP/2.
-    date: Sun, 17 Jul 2022 15:18:16 GMT
+    date: Mon, 19 Sep 2022 05:24:36 GMT
     content-type: text/plain; charset=utf-8
     content-length: 34
     strict-transport-security: max-age=15724800; includeSubDomains # <--------------------- No sensitive information expose.
@@ -165,7 +161,7 @@ Let's check the responses again with ELB endpoint, HTTP protocol
 
     $ curl -i -u 'user:mysecretpassword' "http://XXXXX.elb.us-east-1.amazonaws.com/v1"
     HTTP/1.1 308 Permanent Redirect # <--------------------- Securely redirect to HTTPS.
-    Date: Sun, 17 Jul 2022 15:20:48 GMT
+    Date: Mon, 19 Sep 2022 05:25:23 GMT
     Content-Type: text/html
     Content-Length: 164
     Connection: keep-alive
@@ -173,7 +169,7 @@ Let's check the responses again with ELB endpoint, HTTP protocol
 
     $ curl -i -u 'user:mysecretpassword' "http://XXXXX.elb.us-east-1.amazonaws.com/v2"
     HTTP/1.1 308 Permanent Redirect # <--------------------- Securely redirect to HTTPS.
-    Date: Sun, 17 Jul 2022 15:20:57 GMT
+    Date: Mon, 19 Sep 2022 05:25:48 GMT
     Content-Type: text/html
     Content-Length: 164
     Connection: keep-alive
