@@ -15,23 +15,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: demo-backend-1
+  name: demo-backend
 spec:
   selector:
-    app: demo-backend-1
-  ports:
-    - protocol: TCP
-      port: 8088
-      targetPort: 5678
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: demo-backend-2
-spec:
-  selector:
-    app: demo-backend-2
+    app: demo-backend
   ports:
     - protocol: TCP
       port: 8088

@@ -53,13 +53,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: demo-backend-1
-                port:
-                  number: 8088
-          - path: /v2
-            pathType: Prefix
-            backend:
-              service:
-                name: demo-backend-2
+                name: demo-backend
                 port:
                   number: 8088

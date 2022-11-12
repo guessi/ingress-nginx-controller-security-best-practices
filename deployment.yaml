@@ -24,46 +24,22 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demo-backend-1
+  name: demo-backend
   namespace: default
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: demo-backend-1
+      app: demo-backend
   template:
     metadata:
       labels:
-        app: demo-backend-1
+        app: demo-backend
     spec:
       containers:
       - image: hashicorp/http-echo
-        name: backend1
+        name: http-echo
         args:
-        - -text="this page is served by backend1"
-        ports:
-        - containerPort: 5678
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: demo-backend-2
-  namespace: default
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: demo-backend-2
-  template:
-    metadata:
-      labels:
-        app: demo-backend-2
-    spec:
-      containers:
-      - image: hashicorp/http-echo
-        name: backend2
-        args:
-        - -text="this page is served by backend2"
+        - -text="hello world"
         ports:
         - containerPort: 5678
