@@ -74,7 +74,7 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
 
 Deploy sample scripts via `kubectl apply`
 
-    $ kubectl apply -f ./deployment.yaml -f ./service.yaml -f ./ingress.yaml
+    $ kubectl apply -f ./examples
     deployment.apps/demo-basic-auth created
     deployment.apps/demo-backend created
     service/demo-basic-auth created
@@ -156,7 +156,7 @@ In this example, response header for the http requests:
 
 Cleanup sample scripts via `kubectl delete`
 
-    $ kubectl delete -f ./deployment.yaml -f ./service.yaml -f ./ingress.yaml
+    $ kubectl delete -f ./examples
 
 Cleanup Nginx Ingress Controller
 
