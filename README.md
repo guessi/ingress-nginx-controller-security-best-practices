@@ -8,9 +8,9 @@ Sample deployment of [Ingress-Nginx Controller](https://kubernetes.github.io/ing
 
 ## Prerequisites
 
-- Kubernetes 1.22+
-- Kubernetes CLI 1.22+
-- Kubernetes Helm 3.10+
+- Kubernetes 1.23+
+- Kubernetes CLI 1.23+
+- Kubernetes Helm 3.12+
 
 ## Why I Create this Repository?
 
@@ -21,7 +21,7 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
 ### Get Helm prepared, and don't forget to check your helm version
 
     $ helm version --short
-    v3.11.1+g293b50c
+    v3.12.0+gc9f554d
 
 ### Ensure helm-repo is up to date
 
@@ -38,38 +38,42 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     $ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --values values.yaml --wait
     Release "ingress-nginx" does not exist. Installing it now.
     NAME: ingress-nginx
-    LAST DEPLOYED: Thu Feb 16 13:16:10 2023
+    LAST DEPLOYED: Sun Jun  4 23:54:27 2023
     NAMESPACE: ingress-nginx
     STATUS: deployed
     REVISION: 1
     TEST SUITE: None
+    NOTES:
+    The ingress-nginx controller has been installed.
+    ...
 
 ### Verify Installation
 
 
     $ helm list --filter ingress-nginx --namespace ingress-nginx
     NAME         	NAMESPACE    	REVISION	UPDATED                             	STATUS  	CHART              	APP VERSION
-    ingress-nginx	ingress-nginx	1       	2023-02-16 13:16:10.630941 +0800 CST	deployed	ingress-nginx-4.5.2	1.6.4
+    ingress-nginx	ingress-nginx	1       	2023-06-04 23:54:27.130019 +0800 CST	deployed	ingress-nginx-4.7.0	1.8.0
 
     $ kubectl get services ingress-nginx-controller  --namespace ingress-nginx
-    NAME                       TYPE           CLUSTER-IP       EXTERNAL-IP                         PORT(S)                      AGE
-    ingress-nginx-controller   LoadBalancer   10.100.247.220   XXXXX.elb.us-east-1.amazonaws.com   80:31760/TCP,443:31044/TCP   95s
+    NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP                         PORT(S)                      AGE
+    ingress-nginx-controller   LoadBalancer   10.100.57.100   XXXXX.elb.us-east-1.amazonaws.com   80:31928/TCP,443:30836/TCP   2m17s
 
 ### Detect Installed Version
 
     $ POD_NAME=$(kubectl get pods -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].metadata.name}')
 
     $ echo ${POD_NAME}
-    ingress-nginx-controller-89758f7c6-hmk86
+    ingress-nginx-controller-7cdcd54cc6-4sw5w
 
     $ kubectl -n ingress-nginx exec -it ${POD_NAME} -- /nginx-ingress-controller --version
     -------------------------------------------------------------------------------
     NGINX Ingress controller
-      Release:       v1.6.4
-      Build:         69e8833858fb6bda12a44990f1d5eaa7b13f4b75
+      Release:       v1.8.0
+      Build:         35f5082ee7f211555aaff431d7c4423c17f8ce9e
       Repository:    https://github.com/kubernetes/ingress-nginx
       nginx version: nginx/1.21.6
     -------------------------------------------------------------------------------
+
 ### Deploy
 
 Deploy sample scripts via `kubectl apply`
@@ -85,16 +89,16 @@ Check deployment status
 
     $ kubectl get ingress,service,deployment
     NAME                                     CLASS   HOSTS   ADDRESS                             PORTS   AGE
-    ingress.networking.k8s.io/demo-ingress   nginx   *       XXXXX.elb.us-east-1.amazonaws.com   80      20s
+    ingress.networking.k8s.io/demo-ingress   nginx   *       XXXXX.elb.us-east-1.amazonaws.com   80      24s
 
-    NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-    service/demo-backend      ClusterIP   10.100.11.243   <none>        8088/TCP   20s
-    service/demo-basic-auth   ClusterIP   10.100.226.9    <none>        80/TCP     21s
-    service/kubernetes        ClusterIP   10.100.0.1      <none>        443/TCP    4d14h
+    NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+    service/demo-backend      ClusterIP   10.100.190.107   <none>        8088/TCP   26s
+    service/demo-basic-auth   ClusterIP   10.100.203.205   <none>        80/TCP     25s
+    service/kubernetes        ClusterIP   10.100.0.1       <none>        443/TCP    2d13h
 
     NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
-    deployment.apps/demo-backend      2/2     2            2           21s
-    deployment.apps/demo-basic-auth   2/2     2            2           22s
+    deployment.apps/demo-backend      1/1     1            1           26s
+    deployment.apps/demo-basic-auth   1/1     1            1           25s
 
 ### Verification
 
@@ -110,8 +114,8 @@ Check backend service returns via proxy
     HTTP/1.1 200 OK
     X-App-Name: http-echo # <--------------------- Service information exposed.
     X-App-Version: 0.2.3 # <--------------------- Running version information exposed.
-    Date: Thu, 16 Feb 2023 05:21:27 GMT
-    Content-Length: 34
+    Date: Sun, 04 Jun 2023 16:00:00 GMT
+    Content-Length: 14
     Content-Type: text/plain; charset=utf-8
 
     "hello world"
@@ -120,15 +124,15 @@ Wait until ingress endpoint become ready (ADDRESS fieled should show ELB address
 
     $ kubectl get ingress
     NAME           CLASS   HOSTS   ADDRESS                             PORTS   AGE
-    demo-ingress   nginx   *       XXXXX.elb.us-east-1.amazonaws.com   80      105s
+    demo-ingress   nginx   *       XXXXX.elb.us-east-1.amazonaws.com   80      55s
 
 Let's check the responses again with ELB endpoint, HTTPS protocol
 
     $ curl -i -u 'user:mysecretpassword' "https://${LOAD_BALANCER}/v1" -k
     HTTP/2 200 # <--------------------- Serve with HTTP/2.
-    date: Thu, 16 Feb 2023 05:22:29 GMT
+    date: Sun, 04 Jun 2023 16:00:00 GMT
     content-type: text/plain; charset=utf-8
-    content-length: 34
+    content-length: 14
     strict-transport-security: max-age=15724800; includeSubDomains # <--------------------- No sensitive information expose.
 
     "hello world"
@@ -137,7 +141,7 @@ Let's check the responses again with ELB endpoint, HTTP protocol
 
     $ curl -i -u 'user:mysecretpassword' "http://${LOAD_BALANCER}/v1"
     HTTP/1.1 308 Permanent Redirect # <--------------------- Securely redirect to HTTPS.
-    Date: Thu, 16 Feb 2023 05:22:52 GMT
+    Date: Sun, 04 Jun 2023 16:00:00 GMT
     Content-Type: text/html
     Content-Length: 164
     Connection: keep-alive
