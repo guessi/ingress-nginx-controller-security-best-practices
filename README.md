@@ -18,10 +18,25 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
 
 ## Let's Get Started
 
-### Get Helm prepared, and don't forget to check your helm version
+### Verify you are running with a compatible version of the tools
+
+    $ kubectl version --output json
+    {
+        "clientVersion": {
+            "major": "1",
+            "minor": "27", # <----------- client version is compatible with server version.
+            ...
+        },
+        "kustomizeVersion": "v5.0.1",
+        "serverVersion": {
+            "major": "1",
+            "minor": "27+", # <----------- server version is compatible with client version.
+            ...
+        }
+    }
 
     $ helm version --short
-    v3.12.0+gc9f554d
+    v3.12.3+g3a31588
 
 ### Ensure helm-repo is up to date
 
@@ -38,7 +53,7 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     $ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --values values.yaml --wait
     Release "ingress-nginx" does not exist. Installing it now.
     NAME: ingress-nginx
-    LAST DEPLOYED: Sun Jun  4 23:54:27 2023
+    LAST DEPLOYED: Fri Aug 11 17:30:00 2023
     NAMESPACE: ingress-nginx
     STATUS: deployed
     REVISION: 1
@@ -52,9 +67,9 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
 
     $ helm list --filter ingress-nginx --namespace ingress-nginx
     NAME         	NAMESPACE    	REVISION	UPDATED                             	STATUS  	CHART              	APP VERSION
-    ingress-nginx	ingress-nginx	1       	2023-06-04 23:54:27.130019 +0800 CST	deployed	ingress-nginx-4.7.0	1.8.0
+    ingress-nginx	ingress-nginx	1       	2023-08-11 17:30:00.000000 +0800 CST	deployed	ingress-nginx-4.7.1	1.8.1
 
-    $ kubectl get services ingress-nginx-controller  --namespace ingress-nginx
+    $ kubectl get services ingress-nginx-controller --namespace ingress-nginx
     NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP                         PORT(S)                      AGE
     ingress-nginx-controller   LoadBalancer   10.100.57.100   XXXXX.elb.us-east-1.amazonaws.com   80:31928/TCP,443:30836/TCP   2m17s
 
@@ -68,8 +83,8 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     $ kubectl -n ingress-nginx exec -it ${POD_NAME} -- /nginx-ingress-controller --version
     -------------------------------------------------------------------------------
     NGINX Ingress controller
-      Release:       v1.8.0
-      Build:         35f5082ee7f211555aaff431d7c4423c17f8ce9e
+      Release:       v1.8.1
+      Build:         dc88dce9ea5e700f3301d16f971fa17c6cfe757d
       Repository:    https://github.com/kubernetes/ingress-nginx
       nginx version: nginx/1.21.6
     -------------------------------------------------------------------------------
@@ -114,7 +129,7 @@ Check backend service returns via proxy
     HTTP/1.1 200 OK
     X-App-Name: http-echo # <--------------------- Service information exposed.
     X-App-Version: 0.2.3 # <--------------------- Running version information exposed.
-    Date: Sun, 04 Jun 2023 16:00:00 GMT
+    Date: Fri, 11 Aug 2023 09:30:00 GMT
     Content-Length: 14
     Content-Type: text/plain; charset=utf-8
 
@@ -130,7 +145,7 @@ Let's check the responses again with ELB endpoint, HTTPS protocol
 
     $ curl -i -u 'user:mysecretpassword' "https://${LOAD_BALANCER}/v1" -k
     HTTP/2 200 # <--------------------- Serve with HTTP/2.
-    date: Sun, 04 Jun 2023 16:00:00 GMT
+    date: Fri, 11 Aug 2023 09:30:00 GMT
     content-type: text/plain; charset=utf-8
     content-length: 14
     strict-transport-security: max-age=15724800; includeSubDomains # <--------------------- No sensitive information expose.
@@ -141,7 +156,7 @@ Let's check the responses again with ELB endpoint, HTTP protocol
 
     $ curl -i -u 'user:mysecretpassword' "http://${LOAD_BALANCER}/v1"
     HTTP/1.1 308 Permanent Redirect # <--------------------- Securely redirect to HTTPS.
-    Date: Sun, 04 Jun 2023 16:00:00 GMT
+    Date: Fri, 11 Aug 2023 09:30:00 GMT
     Content-Type: text/html
     Content-Length: 164
     Connection: keep-alive
