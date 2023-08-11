@@ -6,12 +6,6 @@ Sample deployment of [Ingress-Nginx Controller](https://kubernetes.github.io/ing
 
 > :warning: This is demo purpose scripts, review changes before apply, **DO NOT** apply to production directly :warning:
 
-## Prerequisites
-
-- Kubernetes 1.23+
-- Kubernetes CLI 1.23+
-- Kubernetes Helm 3.12+
-
 ## Why I Create this Repository?
 
 Tons of sample scripts for Ingress-Nginx Controller, but few of them were security by default.
