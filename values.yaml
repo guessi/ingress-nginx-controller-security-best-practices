@@ -6,3 +6,13 @@ controller:
       service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
       service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: 'true'
       service.beta.kubernetes.io/aws-load-balancer-type: nlb
+
+  # Per security concern, `allowSnippetAnnotations` will be disabled by default after v1.9.0
+  # - https://github.com/kubernetes/ingress-nginx/releases/tag/controller-v1.9.0
+  # - https://github.com/kubernetes/ingress-nginx/pull/10393
+  allowSnippetAnnotations: true # Set it to `true` for demo purpose
+
+  # However, it actually required an extra annotaion for the annotations risk level
+  # - https://github.com/kubernetes/ingress-nginx/issues/12618
+  config:
+    annotations-risk-level: Critical
