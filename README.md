@@ -18,19 +18,19 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     {
         "clientVersion": {
             "major": "1",
-            "minor": "27", # <----------- client version is compatible with server version.
+            "minor": "31", # <----------- client version is compatible with server version.
             ...
         },
-        "kustomizeVersion": "v5.0.1",
+        "kustomizeVersion": "v5.5.0",
         "serverVersion": {
             "major": "1",
-            "minor": "27+", # <----------- server version is compatible with client version.
+            "minor": "31", # <----------- server version is compatible with client version.
             ...
         }
     }
 
     $ helm version --short
-    v3.12.3+g3a31588
+    v3.17.2+gcc0bbbd
 
 ### Ensure helm-repo is up to date
 
@@ -47,21 +47,18 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     $ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --values values.yaml --wait
     Release "ingress-nginx" does not exist. Installing it now.
     NAME: ingress-nginx
-    LAST DEPLOYED: Fri Aug 11 17:30:00 2023
+    LAST DEPLOYED: Thu Mar 27 09:00:00 2025
     NAMESPACE: ingress-nginx
     STATUS: deployed
-    REVISION: 1
-    TEST SUITE: None
-    NOTES:
-    The ingress-nginx controller has been installed.
     ...
+    The ingress-nginx controller has been installed.
 
 ### Verify Installation
 
 
     $ helm list --filter ingress-nginx --namespace ingress-nginx
     NAME         	NAMESPACE    	REVISION	UPDATED                             	STATUS  	CHART              	APP VERSION
-    ingress-nginx	ingress-nginx	1       	2023-08-11 17:30:00.000000 +0800 CST	deployed	ingress-nginx-4.7.1	1.8.1
+    ingress-nginx	ingress-nginx	1       	2025-03-27 09:00:00.000000 +0800 CST	deployed	ingress-nginx-4.12.1	1.12.1
 
     $ kubectl get services ingress-nginx-controller --namespace ingress-nginx
     NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP                         PORT(S)                      AGE
@@ -77,10 +74,10 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     $ kubectl -n ingress-nginx exec -it ${POD_NAME} -- /nginx-ingress-controller --version
     -------------------------------------------------------------------------------
     NGINX Ingress controller
-      Release:       v1.8.1
-      Build:         dc88dce9ea5e700f3301d16f971fa17c6cfe757d
+      Release:       v1.12.1
+      Build:         51c2b819690bbf1709b844dbf321a9acf6eda5a7
       Repository:    https://github.com/kubernetes/ingress-nginx
-      nginx version: nginx/1.21.6
+      nginx version: nginx/1.25.5
     -------------------------------------------------------------------------------
 
 ### Deploy
@@ -122,8 +119,8 @@ Check backend service returns via proxy
     $ curl -i -u 'user:mysecretpassword' "http://localhost:18088/v1"
     HTTP/1.1 200 OK
     X-App-Name: http-echo # <--------------------- Service information exposed.
-    X-App-Version: 0.2.3 # <--------------------- Running version information exposed.
-    Date: Fri, 11 Aug 2023 09:30:00 GMT
+    X-App-Version: 1.0.0 # <--------------------- Running version information exposed.
+    Date: Thu, 27 Mar 2025 01:30:00 GMT
     Content-Length: 14
     Content-Type: text/plain; charset=utf-8
 
@@ -139,7 +136,7 @@ Let's check the responses again with ELB endpoint, HTTPS protocol
 
     $ curl -i -u 'user:mysecretpassword' "https://${LOAD_BALANCER}/v1" -k
     HTTP/2 200 # <--------------------- Serve with HTTP/2.
-    date: Fri, 11 Aug 2023 09:30:00 GMT
+    date: Thu, 27 Mar 2025 01:30:00 GMT
     content-type: text/plain; charset=utf-8
     content-length: 14
     strict-transport-security: max-age=15724800; includeSubDomains # <--------------------- No sensitive information expose.
@@ -150,7 +147,7 @@ Let's check the responses again with ELB endpoint, HTTP protocol
 
     $ curl -i -u 'user:mysecretpassword' "http://${LOAD_BALANCER}/v1"
     HTTP/1.1 308 Permanent Redirect # <--------------------- Securely redirect to HTTPS.
-    Date: Fri, 11 Aug 2023 09:30:00 GMT
+    Date: Thu, 27 Mar 2025 01:30:00 GMT
     Content-Type: text/html
     Content-Length: 164
     Connection: keep-alive
