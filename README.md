@@ -22,19 +22,19 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     {
         "clientVersion": {
             "major": "1",
-            "minor": "31", # <----------- client version is compatible with server version.
+            "minor": "34", # <----------- client version is compatible with server version.
             ...
         },
-        "kustomizeVersion": "v5.5.0",
+        "kustomizeVersion": "v5.7.1",
         "serverVersion": {
             "major": "1",
-            "minor": "31", # <----------- server version is compatible with client version.
+            "minor": "33", # <----------- server version is compatible with client version.
             ...
         }
     }
 
     $ helm version --short
-    v3.17.2+gcc0bbbd
+    v3.18.6+gb76a950
 
 ### Ensure helm-repo is up to date
 
@@ -51,7 +51,7 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     $ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace --values values.yaml --wait
     Release "ingress-nginx" does not exist. Installing it now.
     NAME: ingress-nginx
-    LAST DEPLOYED: Thu Mar 27 09:00:00 2025
+    LAST DEPLOYED: ...
     NAMESPACE: ingress-nginx
     STATUS: deployed
     ...
@@ -61,8 +61,8 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
 
 
     $ helm list --filter ingress-nginx --namespace ingress-nginx
-    NAME         	NAMESPACE    	REVISION	UPDATED                             	STATUS  	CHART              	APP VERSION
-    ingress-nginx	ingress-nginx	1       	2025-03-27 09:00:00.000000 +0800 CST	deployed	ingress-nginx-4.12.1	1.12.1
+    NAME         	NAMESPACE    	REVISION	UPDATED                            	STATUS  	CHART              	APP VERSION
+    ingress-nginx	ingress-nginx	1       	2025-XX-XX XX:XX:XX.XXXXX +0000 	deployed	ingress-nginx-4.13.2	1.13.2
 
     $ kubectl get services ingress-nginx-controller --namespace ingress-nginx
     NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP                         PORT(S)                      AGE
@@ -78,10 +78,10 @@ Tons of sample scripts for Ingress-Nginx Controller, but few of them were securi
     $ kubectl -n ingress-nginx exec -it ${POD_NAME} -- /nginx-ingress-controller --version
     -------------------------------------------------------------------------------
     NGINX Ingress controller
-      Release:       v1.12.1
-      Build:         51c2b819690bbf1709b844dbf321a9acf6eda5a7
+      Release:       v1.13.2
+      Build:         11c69a64ce3c5bdfb6782434d9f62296d4b42179
       Repository:    https://github.com/kubernetes/ingress-nginx
-      nginx version: nginx/1.25.5
+      nginx version: nginx/1.27.1
     -------------------------------------------------------------------------------
 
 ### Deploy
@@ -124,7 +124,7 @@ Check backend service returns via proxy
     HTTP/1.1 200 OK
     X-App-Name: http-echo # <--------------------- Service information exposed.
     X-App-Version: 1.0.0 # <--------------------- Running version information exposed.
-    Date: Thu, 27 Mar 2025 01:30:00 GMT
+    Date: XXX, XX XXX 2025 XX:XX:XX GMT
     Content-Length: 14
     Content-Type: text/plain; charset=utf-8
 
@@ -140,7 +140,7 @@ Let's check the responses again with ELB endpoint, HTTPS protocol
 
     $ curl -i -u 'user:mysecretpassword' "https://${LOAD_BALANCER}/v1" -k
     HTTP/2 200 # <--------------------- Serve with HTTP/2.
-    date: Thu, 27 Mar 2025 01:30:00 GMT
+    date: XXX, XX XXX 2025 XX:XX:XX GMT
     content-type: text/plain; charset=utf-8
     content-length: 14
     strict-transport-security: max-age=15724800; includeSubDomains # <--------------------- No sensitive information expose.
@@ -151,7 +151,7 @@ Let's check the responses again with ELB endpoint, HTTP protocol
 
     $ curl -i -u 'user:mysecretpassword' "http://${LOAD_BALANCER}/v1"
     HTTP/1.1 308 Permanent Redirect # <--------------------- Securely redirect to HTTPS.
-    Date: Thu, 27 Mar 2025 01:30:00 GMT
+    Date: XXX, XX XXX 2025 XX:XX:XX GMT
     Content-Type: text/html
     Content-Length: 164
     Connection: keep-alive
